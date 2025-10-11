@@ -118,6 +118,10 @@ function renderResult(result) {
     return;
   }
 
+  // Create table wrapper for horizontal scrolling
+  const tableWrapper = document.createElement("div");
+  tableWrapper.className = "table-wrapper";
+
   const table = document.createElement("table");
   table.innerHTML = `<thead><tr><th>Level</th><th>Users</th><th>AdminDepositTotal</th><th>TotalDeposit</th></tr></thead>`;
   const tbody = document.createElement("tbody");
@@ -129,7 +133,8 @@ function renderResult(result) {
   });
 
   table.appendChild(tbody);
-  resultsEl.appendChild(table);
+  tableWrapper.appendChild(table);
+  resultsEl.appendChild(tableWrapper);
 
   const grand = result.grand || {};
   const pre = document.createElement("pre");
