@@ -113,12 +113,22 @@ startBtn.addEventListener("click", async () => {
 
 function renderResult(result) {
   resultsEl.innerHTML = "";
+
+  // find the card element that wraps results so we can center that
+  // structure: <section class="results-wrap"><div class="card"> ... <div id="results"></div>
+  const resultsCard = (function () {
+    let el = resultsEl;
+    while (el && el !== document.body) {
+      if (el.classList && el.classList.contains && el.classList.contains("card")) return el;
+      el = el.parentElement;
+    }
+    return resultsEl; // fallback
+  })();
+
   if (!result || !result.levels || !result.levels.length) {
     resultsEl.textContent = "No results.";
-    // still scroll to results area even if empty
-    setTimeout(() => {
-      resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
+    // still try to center the results card even if empty
+    centerElementInViewport(resultsCard);
     return;
   }
 
@@ -132,7 +142,10 @@ function renderResult(result) {
 
   result.levels.forEach(l => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${l.level}</td><td>${l.userCount}</td><td>${Number(l.adminDepositTotal).toFixed(2)}</td><td>${Number(l.totalDeposit).toFixed(2)}</td>`;
+    tr.innerHTML = `<td>${escapeHtml(String(l.level))}</td>
+                    <td>${escapeHtml(String(l.userCount))}</td>
+                    <td>${escapeHtml(Number(l.adminDepositTotal).toFixed(2))}</td>
+                    <td>${escapeHtml(Number(l.totalDeposit).toFixed(2))}</td>`;
     tbody.appendChild(tr);
   });
 
@@ -153,18 +166,67 @@ function renderResult(result) {
   resultsEl.appendChild(heading);
   resultsEl.appendChild(pre);
 
-  // small delay to allow browser to layout new content, then scroll smoothly
-  // Prefer scrolling the heading so the table sits nicely below the fold
-  setTimeout(() => {
-    try {
-      if (heading && typeof heading.scrollIntoView === "function") {
-        heading.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } catch (e) {
-      // fallback - no-op
-      console.warn("Scroll into view failed:", e);
+  // Finally, center the results card smoothly in the viewport.
+  centerElementInViewport(resultsCard);
+}
+
+/* Helper: smooth center scrolling that works on mobile & desktop
+   - Blurs active input to close mobile keyboard
+   - Waits for layout to settle (double RAF + small timeout)
+   - Computes target so element is centered vertically in viewport
+*/
+function centerElementInViewport(el) {
+  if (!el) return;
+
+  // If an input is focused, blur it so the mobile keyboard can hide
+  try {
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) {
+      active.blur();
     }
-  }, 80);
+  } catch (e) {
+    // ignore
+  }
+
+  // Wait for layout to settle: double RAF then slight timeout for keyboard hide
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        try {
+          const rect = el.getBoundingClientRect();
+          const elTop = window.scrollY + rect.top;
+          // center the element: target = element top - half viewport + half element height
+          const target = Math.max(0, Math.round(elTop - (window.innerHeight / 2) + (rect.height / 2)));
+
+          // Use smooth scroll if available
+          if ('scrollBehavior' in document.documentElement.style) {
+            window.scrollTo({ top: target, behavior: 'smooth' });
+          } else {
+            window.scrollTo(0, target);
+          }
+        } catch (err) {
+          // last-resort: fallback to scrollIntoView center (some old browsers)
+          try {
+            if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          } catch (e) { /* ignore */ }
+        }
+      }, 120); // small delay helps on mobile so keyboard can retract
+    });
+  });
+}
+
+/* tiny HTML-escape helper to avoid accidental HTML injection when building the table */
+function escapeHtml(s) {
+  return s.replace(/[&<>"'`=\/]/g, function (c) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    }[c];
+  });
 }
