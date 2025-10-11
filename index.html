@@ -1,0 +1,55 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Team Deposit Viewer — Miner X</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <!-- Top centered card -->
+    <section class="top-card-wrap">
+      <div class="top-card">
+        <h1 class="title">Team Deposit Viewer</h1>
+        <p class="subtitle">Enter a root UID to inspect team deposits. Logs stream live while the job runs.</p>
+
+        <form id="mainForm" class="form" onsubmit="return false;">
+          <label class="label" for="rootUid">Root UID</label>
+          <input id="rootUid" class="input" placeholder="Enter root UID" autocomplete="off" />
+
+          <label class="label" for="password">Password</label>
+          <input id="password" class="input" type="password" placeholder="Enter password" />
+
+          <div class="controls">
+            <button id="startBtn" class="btn primary" type="button">Start</button>
+            <button id="clearBtn" class="btn ghost" type="button">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Logs (hero text changed to user-friendly) -->
+    <section class="logs-wrap">
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Live job log</h2>
+          <p class="card-sub">Real-time progress and status appear here while the server processes the request.</p>
+        </div>
+        <pre id="logs" class="logs" aria-live="polite"></pre>
+      </div>
+    </section>
+
+    <!-- Results (kept as-is but slightly polished) -->
+    <section class="results-wrap">
+      <div class="card">
+        <h2 class="card-title">Results</h2>
+        <div id="results"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
