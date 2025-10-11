@@ -1,4 +1,3 @@
-/* styles.css */
 :root {
   --bg: #070608;
   --card: #0e0f11;
@@ -12,9 +11,10 @@
 }
 
 * {
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
+/* page / base */
 html,
 body {
   height: 100%;
@@ -25,24 +25,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent horizontal overflow */
+/* Prevent horizontal overflow of the entire page */
 html {
   overflow-x: hidden;
 }
 
-/* Base page container */
-.page {
-  width: 100%;
-  max-width: var(--maxWidth);
-  margin: 30px auto;
-  padding: 28px;
-  display: grid;
-  gap: 28px;
-  position: relative;
-  z-index: 1;
-}
-
-/* fixed decorative gradients in a fixed ::before layer so they don't move while scrolling */
+/* background */
 html,
 body {
   background-color: var(--bg);
@@ -62,6 +50,18 @@ body::before {
   background-attachment: fixed;
   background-size: cover;
   opacity: 1;
+}
+
+/* Base page container */
+.page {
+  width: 100%;
+  max-width: var(--maxWidth);
+  margin: 30px auto;
+  padding: 28px;
+  display: grid;
+  gap: 28px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Top card: centered, prominent */
@@ -227,19 +227,30 @@ body::before {
   margin-top: 4px;
 }
 
-/* Table responsive wrapper */
+/* -------------------------
+   Responsive table wrapper & table
+   ------------------------- */
+
+/* The wrapper now scrolls internally; removed negative margins that caused overflow */
 .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 0 -10px;
-  /* Negative margin to allow scroll to edge */
-  padding: 0 10px;
+  margin: 0;
+  /* no negative margins */
+  padding: 0;
+  box-shadow: inset -10px 0 10px -10px rgba(255, 255, 255, 0.06);
+  width: 100%;
+  max-width: 100%;
 }
 
-table {
+/* Make table responsive inside the wrapper */
+.table-wrapper>table {
   width: 100%;
-  min-width: 400px;
-  /* Minimum width before scrolling */
+  max-width: 100%;
+  min-width: 320px;
+  /* small minimum width before scrolling */
+  table-layout: fixed;
+  /* avoids columns expanding unexpectedly */
   border-collapse: collapse;
   margin-top: 12px;
   background: transparent;
@@ -247,6 +258,7 @@ table {
   overflow: hidden;
 }
 
+/* header */
 thead th {
   text-align: center;
   background: rgba(0, 0, 0, 0.25);
@@ -254,39 +266,52 @@ thead th {
   font-weight: 700;
   font-size: 14px;
   color: #fff;
-  white-space: nowrap;
+  /* allow wrapping instead of forcing width */
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
+/* body cells - allow breaking long values, center text */
 tbody td {
   padding: 12px;
   text-align: center;
   color: #fff;
   font-size: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.02);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
+/* alternating row background */
 tbody tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.012);
 }
 
-/* pre for grand totals */
+/* Grand totals pre: don't let it expand the page, allow internal scrolling */
 .results-wrap pre {
   margin-top: 12px;
   background: rgba(0, 0, 0, 0.32);
   padding: 12px;
   border-radius: 8px;
   color: #ffd9b8;
-  /* Fix text wrapping */
+  /* pretty JSON but allow it to wrap and scroll internally */
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
   overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* Results container */
+/* Results container - do not allow it to create page-level horizontal scroll */
 #results {
   overflow-x: hidden;
+  /* table-wrapper handles horizontal scrolling */
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* responsive */
@@ -363,4 +388,24 @@ tbody tr:nth-child(even) {
     flex: 1;
     min-width: 100px;
   }
+
+  /* allow table to be narrower on very small devices and rely on table-layout: fixed */
+  .table-wrapper>table {
+    min-width: unset;
+  }
+
+  thead th,
+  tbody td {
+    font-size: 13px;
+    padding: 10px 6px;
+  }
+}
+
+/* Optional utility: prevent wrap for numeric columns if needed.
+   Use by adding the 'no-wrap' class to <td> you want to keep on one line:
+   <td class="no-wrap">1234.00</td> */
+.no-wrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
