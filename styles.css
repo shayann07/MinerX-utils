@@ -1,3 +1,10 @@
+/* at the top of styles.css or near other global rules */
+html {
+  scroll-behavior: smooth;
+  /* keep overflow-x hidden if you already have it */
+  overflow-x: hidden;
+}
+
 :root {
   --bg: #070608;
   --card: #0e0f11;

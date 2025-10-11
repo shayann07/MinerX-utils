@@ -115,6 +115,10 @@ function renderResult(result) {
   resultsEl.innerHTML = "";
   if (!result || !result.levels || !result.levels.length) {
     resultsEl.textContent = "No results.";
+    // still scroll to results area even if empty
+    setTimeout(() => {
+      resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
     return;
   }
 
@@ -148,4 +152,19 @@ function renderResult(result) {
   heading.textContent = "Grand Totals";
   resultsEl.appendChild(heading);
   resultsEl.appendChild(pre);
+
+  // small delay to allow browser to layout new content, then scroll smoothly
+  // Prefer scrolling the heading so the table sits nicely below the fold
+  setTimeout(() => {
+    try {
+      if (heading && typeof heading.scrollIntoView === "function") {
+        heading.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch (e) {
+      // fallback - no-op
+      console.warn("Scroll into view failed:", e);
+    }
+  }, 80);
 }
